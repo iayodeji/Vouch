@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vouch — Africa's Trust Infrastructure</title>
+  <meta name="description" content="Vouch turns 'I'll pay you later' into a financial identity. Africa's API-first informal debt collection and credit scoring platform." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── RESET & BASE ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:        #0a0a0f;
+      --bg2:       #0e0e16;
+      --bg3:       #13131e;
+      --gold:      #c9a84c;
+      --gold-dim:  rgba(201,168,76,0.15);
+      --gold-glow: rgba(201,168,76,0.35);
+      --ivory:     #f0ede8;
+      --ivory-dim: rgba(240,237,232,0.55);
+      --card-bg:   rgba(255,255,255,0.04);
+      --card-border: rgba(255,255,255,0.08);
+      --radius:    20px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--ivory);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+    /* grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.5;
+    }
+    h1,h2,h3,h4 { font-family: 'Syne', sans-serif; line-height: 1.15; }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+    button, input, select, textarea { font-family: inherit; }
+
+    /* ─── UTILITIES ──────────────────────────────────────────── */
+    .container { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+    .gold { color: var(--gold); }
+    .tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--gold-dim);
+      border: 1px solid rgba(201,168,76,0.3);
+      color: var(--gold);
+      font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 100px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(40px);
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--gold); color: #0a0a0f;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px;
+      padding: 14px 28px; border-radius: 100px; border: none; cursor: pointer;
+      transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s ease;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px var(--gold-glow); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent; color: var(--gold);
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px;
+      padding: 13px 27px; border-radius: 100px;
+      border: 1px solid rgba(201,168,76,0.5); cursor: pointer;
+      transition: background 0.3s ease, border-color 0.3s ease;
+      white-space: nowrap;
+    }
+    .btn-secondary:hover { background: var(--gold-dim); border-color: var(--gold); }
+
+    /* fade-up reveal */
+    .reveal { opacity: 0; transform: translateY(32px); transition: opacity 0.6s cubic-bezier(.22,1,.36,1), transform 0.6s cubic-bezier(.22,1,.36,1); }
+    .reveal.visible { opacity: 1; transform: none; }
+    .reveal-d1 { transition-delay: 0.1s; }
+    .reveal-d2 { transition-delay: 0.2s; }
+    .reveal-d3 { transition-delay: 0.3s; }
+    .reveal-d4 { transition-delay: 0.4s; }
+    .reveal-d5 { transition-delay: 0.5s; }
+
+    /* ─── NAV ────────────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      backdrop-filter: blur(20px);
+      background: rgba(10,10,15,0.7);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      transition: background 0.3s ease;
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .nav-logo {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px;
+      letter-spacing: -0.02em; color: var(--ivory);
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-links { display: flex; gap: 32px; align-items: center; }
+    .nav-links a {
+      font-size: 14px; font-weight: 500; color: var(--ivory-dim);
+      transition: color 0.2s ease;
+    }
+    .nav-links a:hover { color: var(--ivory); }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-cta { padding: 10px 20px; font-size: 14px; }
+    .nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--ivory); border-radius: 2px; transition: all 0.3s ease; }
+    .mobile-menu {
+      display: none; flex-direction: column; gap: 0;
+      background: rgba(10,10,15,0.97);
+      border-top: 1px solid var(--card-border);
+      padding: 12px 0 20px;
+    }
+    .mobile-menu a { padding: 12px 24px; font-size: 15px; color: var(--ivory-dim); }
+    .mobile-menu a:hover { color: var(--ivory); background: rgba(255,255,255,0.03); }
+    .mobile-menu .btn-primary { margin: 12px 24px 0; justify-content: center; }
+
+    /* ─── HERO ───────────────────────────────────────────────── */
+    #hero {
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding: 120px 0 80px;
+      position: relative; overflow: hidden;
+    }
+    #hero-canvas {
+      position: absolute; inset: 0; z-index: 0;
+      pointer-events: none;
+    }
+    .hero-grid-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .hero-glow {
+      position: absolute; z-index: 0;
+      border-radius: 50%; filter: blur(100px); pointer-events: none;
+    }
+    .hero-glow-1 { width: 600px; height: 600px; background: rgba(201,168,76,0.07); top: -100px; right: -100px; }
+    .hero-glow-2 { width: 400px; height: 400px; background: rgba(120,80,200,0.06); bottom: 0; left: -80px; }
+    .hero-inner {
+      position: relative; z-index: 1;
+      display: grid; grid-template-columns: 1fr 480px; gap: 64px; align-items: center;
+    }
+    .hero-eyebrow { margin-bottom: 20px; }
+    .hero-headline {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(40px, 5.5vw, 72px);
+      letter-spacing: -0.03em; line-height: 1.05;
+      margin-bottom: 24px;
+    }
+    .hero-sub {
+      font-size: clamp(16px, 1.8vw, 19px);
+      color: var(--ivory-dim); max-width: 500px;
+      margin-bottom: 36px; line-height: 1.7;
+    }
+    .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; }
+
+    /* WhatsApp mock */
+    .wa-mock {
+      position: relative; z-index: 1;
+    }
+    .wa-phone {
+      background: linear-gradient(145deg, #1a1a28, #0f0f1a);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 28px;
+      padding: 24px 20px 28px;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+      max-width: 380px; margin: 0 auto;
+    }
+    .wa-topbar {
+      display: flex; align-items: center; gap: 10px;
+      padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.06);
+      margin-bottom: 16px;
+    }
+    .wa-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), #8b5e1a);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; color: #0a0a0f;
+    }
+    .wa-contact-name { font-weight: 600; font-size: 14px; }
+    .wa-contact-sub { font-size: 11px; color: var(--ivory-dim); }
+    .wa-status { width: 8px; height: 8px; background: #25d366; border-radius: 50%; margin-left: auto; }
+    .wa-messages { display: flex; flex-direction: column; gap: 10px; }
+    .wa-msg {
+      padding: 10px 14px; border-radius: 14px 14px 14px 4px;
+      background: #1f2937; font-size: 13px; line-height: 1.55;
+      max-width: 90%; color: #e5e7eb;
+      animation: msgPop 0.4s cubic-bezier(.34,1.56,.64,1) backwards;
+    }
+    .wa-msg-time { font-size: 10px; color: rgba(255,255,255,0.35); margin-top: 4px; text-align: right; }
+    .wa-msg .wa-name { font-weight: 600; color: var(--gold); }
+    .wa-pay-btn {
+      display: block; margin-top: 10px;
+      background: var(--gold); color: #0a0a0f;
+      text-align: center; padding: 8px 16px; border-radius: 8px;
+      font-weight: 700; font-size: 13px; cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .wa-pay-btn:hover { opacity: 0.88; }
+    .wa-paid {
+      margin-top: 8px; align-self: flex-end;
+      background: rgba(37,211,102,0.15); border: 1px solid rgba(37,211,102,0.3);
+      color: #25d366; padding: 10px 14px; border-radius: 14px 14px 4px 14px;
+      font-size: 13px; max-width: 85%; font-weight: 600;
+      animation: msgPop 0.4s 1.2s cubic-bezier(.34,1.56,.64,1) backwards;
+    }
+    .wa-paid-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      margin-top: 4px; font-size: 11px; color: #25d366;
+    }
+    @keyframes msgPop {
+      from { opacity: 0; transform: scale(0.85) translateY(8px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .wa-msg:nth-child(1) { animation-delay: 0.3s; }
+    .wa-msg:nth-child(2) { animation-delay: 0.7s; }
+
+    /* ─── PROBLEM STATS ──────────────────────────────────────── */
+    #problem {
+      padding: 100px 0;
+      background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    }
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+      margin-bottom: 56px;
+    }
+    .stat-card {
+      padding: 48px 36px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .stat-card:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+    .stat-card:last-child  { border-radius: 0 var(--radius) var(--radius) 0; }
+    .stat-card::before {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0; transition: opacity 0.4s ease;
+    }
+    .stat-card:hover::before { opacity: 1; }
+    .stat-num {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(36px, 4vw, 58px);
+      color: var(--gold); letter-spacing: -0.03em;
+      line-height: 1; margin-bottom: 12px;
+    }
+    .stat-label { font-size: 14px; color: var(--ivory-dim); font-weight: 500; }
+    .problem-copy {
+      max-width: 680px; margin: 0 auto; text-align: center;
+      font-size: clamp(16px, 1.6vw, 19px); color: var(--ivory-dim);
+      line-height: 1.75;
+    }
+    .problem-copy strong { color: var(--ivory); }
+
+    /* ─── HOW IT WORKS ───────────────────────────────────────── */
+    #how {
+      padding: 100px 0;
+      background: var(--bg2);
+    }
+    .section-header { text-align: center; margin-bottom: 64px; }
+    .section-title {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(32px, 3.5vw, 50px);
+      letter-spacing: -0.03em; margin: 12px 0 16px;
+    }
+    .section-sub { font-size: 17px; color: var(--ivory-dim); max-width: 520px; margin: 0 auto; }
+    .steps-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px;
+      position: relative;
+    }
+    .steps-connector {
+      position: absolute; top: 40px; left: 12.5%; right: 12.5%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--card-border) 15%, var(--card-border) 85%, transparent);
+    }
+    .step-card {
+      padding: 36px 28px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0;
+      position: relative; text-align: left;
+    }
+    .step-card:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+    .step-card:last-child  { border-radius: 0 var(--radius) var(--radius) 0; }
+    .step-num {
+      position: absolute; top: -12px; right: 20px;
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: 80px; line-height: 1; color: rgba(255,255,255,0.025);
+      pointer-events: none; user-select: none;
+    }
+    .step-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      background: var(--gold-dim); border: 1px solid rgba(201,168,76,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 20px;
+    }
+    .step-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 17px; margin-bottom: 8px; }
+    .step-desc { font-size: 14px; color: var(--ivory-dim); line-height: 1.6; }
+
+    /* ─── TRUST SCORE ────────────────────────────────────────── */
+    #score {
+      padding: 100px 0;
+      background: linear-gradient(180deg, var(--bg2) 0%, var(--bg3) 100%);
+    }
+    .score-inner {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+    }
+    .score-copy .section-title { text-align: left; }
+    .score-copy .section-sub { text-align: left; margin: 0; }
+    .score-copy p { color: var(--ivory-dim); font-size: 17px; line-height: 1.75; margin-top: 16px; }
+    .score-features { margin-top: 32px; display: flex; flex-direction: column; gap: 12px; }
+    .score-feat {
+      display: flex; align-items: flex-start; gap: 12px;
+      font-size: 15px; color: var(--ivory-dim);
+    }
+    .score-feat::before {
+      content: '→'; color: var(--gold); flex-shrink: 0; margin-top: 1px;
+    }
+
+    /* Score card */
+    .score-card-wrap { position: relative; }
+    .score-card-wrap::before {
+      content: '';
+      position: absolute; inset: -30px;
+      background: radial-gradient(ellipse at center, rgba(201,168,76,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .score-card {
+      padding: 32px;
+    }
+    .sc-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .sc-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: linear-gradient(135deg, #c9a84c, #7c4f0f);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #0a0a0f;
+    }
+    .sc-name-wrap .sc-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; }
+    .sc-name-wrap .sc-id  { font-size: 12px; color: var(--ivory-dim); }
+    .sc-badge {
+      background: rgba(37,211,102,0.12); border: 1px solid rgba(37,211,102,0.3);
+      color: #25d366; font-size: 11px; font-weight: 700;
+      padding: 4px 10px; border-radius: 100px; letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    .sc-score-ring {
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; margin-bottom: 24px;
+      position: relative;
+    }
+    .sc-ring-svg { position: relative; }
+    .sc-ring-bg { stroke: rgba(255,255,255,0.06); fill: none; }
+    .sc-ring-fill {
+      fill: none; stroke: var(--gold); stroke-linecap: round;
+      stroke-dasharray: 251; stroke-dashoffset: 25;
+      filter: drop-shadow(0 0 8px rgba(201,168,76,0.6));
+      animation: ringFill 1.5s 0.5s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes ringFill {
+      from { stroke-dashoffset: 251; }
+      to   { stroke-dashoffset: 25; }
+    }
+    .sc-score-num {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      text-align: center;
+    }
+    .sc-num {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 42px;
+      color: var(--gold); letter-spacing: -0.03em;
+      animation: scorePulse 3s 2s ease-in-out infinite;
+    }
+    @keyframes scorePulse {
+      0%,100% { text-shadow: 0 0 20px rgba(201,168,76,0.4); }
+      50%      { text-shadow: 0 0 40px rgba(201,168,76,0.8), 0 0 80px rgba(201,168,76,0.3); }
+    }
+    .sc-denom { font-size: 14px; color: var(--ivory-dim); display: block; }
+    .sc-stats {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;
+    }
+    .sc-stat {
+      background: rgba(255,255,255,0.03); border: 1px solid var(--card-border);
+      border-radius: 12px; padding: 12px;
+      text-align: center;
+    }
+    .sc-stat-val { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; color: var(--ivory); }
+    .sc-stat-lbl { font-size: 10px; color: var(--ivory-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+    .sc-bars {
+      display: flex; gap: 4px; align-items: flex-end; height: 40px; margin-top: 8px;
+    }
+    .sc-bar {
+      flex: 1; border-radius: 4px 4px 0 0;
+      background: var(--gold);
+      animation: barGrow 0.8s cubic-bezier(.22,1,.36,1) backwards;
+    }
+    @keyframes barGrow { from { transform: scaleY(0); transform-origin: bottom; } }
+    .sc-bar-lbl { font-size: 9px; color: var(--ivory-dim); text-align: center; margin-top: 4px; }
+    .sc-bar-row { display: flex; flex-direction: column; flex: 1; }
+
+    /* ─── FOR BUSINESSES + DEVELOPERS ───────────────────────── */
+    #audience {
+      padding: 100px 0;
+      background: var(--bg3);
+    }
+    .audience-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 64px;
+    }
+    .audience-card { padding: 40px; }
+    .aud-icon {
+      width: 52px; height: 52px; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; margin-bottom: 20px;
+      background: var(--gold-dim); border: 1px solid rgba(201,168,76,0.2);
+    }
+    .aud-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; margin-bottom: 8px; }
+    .aud-sub { font-size: 14px; color: var(--ivory-dim); margin-bottom: 24px; }
+    .aud-features { display: flex; flex-direction: column; gap: 12px; }
+    .aud-feature {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 14px; color: var(--ivory-dim);
+    }
+    .aud-feature-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--gold); flex-shrink: 0; margin-top: 7px;
+    }
+    /* code block */
+    .code-block {
+      margin-top: 28px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 20px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.65;
+      overflow-x: auto;
+    }
+    .code-topbar {
+      display: flex; gap: 6px; margin-bottom: 14px;
+    }
+    .code-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .code-dot-r { background: #ff5f57; }
+    .code-dot-y { background: #febc2e; }
+    .code-dot-g { background: #28c840; }
+    .code-method { color: #c792ea; }
+    .code-path   { color: #c3e88d; }
+    .code-key    { color: #82aaff; }
+    .code-val    { color: #f07178; }
+    .code-str    { color: #c3e88d; }
+    .code-num    { color: #f78c6c; }
+    .code-brace  { color: rgba(255,255,255,0.5); }
+
+    /* ─── TESTIMONIALS ───────────────────────────────────────── */
+    #testimonials {
+      padding: 100px 0;
+      background: linear-gradient(180deg, var(--bg3) 0%, var(--bg2) 100%);
+    }
+    .testimonials-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 56px;
+    }
+    .testi-card { padding: 32px; }
+    .testi-stars { color: var(--gold); font-size: 14px; margin-bottom: 16px; letter-spacing: 2px; }
+    .testi-quote {
+      font-size: 15px; line-height: 1.7; color: var(--ivory);
+      margin-bottom: 20px; font-style: italic;
+    }
+    .testi-quote::before { content: '"'; }
+    .testi-quote::after  { content: '"'; }
+    .testi-author { display: flex; align-items: center; gap: 12px; }
+    .testi-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px;
+      color: #0a0a0f; flex-shrink: 0;
+    }
+    .testi-name { font-weight: 600; font-size: 14px; }
+    .testi-title { font-size: 12px; color: var(--ivory-dim); }
+
+    /* ─── CTA SECTION ────────────────────────────────────────── */
+    #cta-section {
+      padding: 120px 0;
+      background: var(--bg2);
+      position: relative; overflow: hidden; text-align: center;
+    }
+    #cta-section::before {
+      content: '';
+      position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 600px;
+      background: radial-gradient(ellipse, rgba(201,168,76,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-headline {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(32px, 4vw, 56px);
+      letter-spacing: -0.03em; margin-bottom: 20px;
+    }
+    .cta-sub {
+      font-size: 17px; color: var(--ivory-dim);
+      max-width: 520px; margin: 0 auto 40px;
+    }
+    .email-capture {
+      display: flex; gap: 0; max-width: 480px; margin: 0 auto 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 100px; padding: 6px 6px 6px 20px;
+      transition: border-color 0.3s ease;
+    }
+    .email-capture:focus-within { border-color: rgba(201,168,76,0.4); }
+    .email-capture input {
+      flex: 1; background: none; border: none; outline: none;
+      color: var(--ivory); font-size: 15px;
+    }
+    .email-capture input::placeholder { color: rgba(240,237,232,0.35); }
+    .cta-note {
+      font-size: 12px; color: var(--ivory-dim); margin-bottom: 0;
+    }
+    .hackathon-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: 24px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 100px; padding: 8px 18px;
+      font-size: 12px; color: var(--ivory-dim);
+    }
+    .hackathon-badge span { color: var(--gold); font-weight: 600; }
+
+    /* ─── FOOTER ─────────────────────────────────────────────── */
+    footer {
+      background: var(--bg);
+      border-top: 1px solid var(--card-border);
+      padding: 60px 0 32px;
+    }
+    .footer-top {
+      display: grid; grid-template-columns: 1fr auto; gap: 48px; align-items: start;
+      margin-bottom: 48px;
+    }
+    .footer-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; margin-bottom: 8px; }
+    .footer-logo span { color: var(--gold); }
+    .footer-tagline { font-size: 14px; color: var(--ivory-dim); }
+    .footer-links { display: flex; gap: 32px; }
+    .footer-links a { font-size: 14px; color: var(--ivory-dim); transition: color 0.2s ease; }
+    .footer-links a:hover { color: var(--ivory); }
+    .footer-bottom {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 24px; border-top: 1px solid var(--card-border);
+      font-size: 12px; color: rgba(240,237,232,0.3);
+    }
+
+    /* ─── MODAL ──────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: #12121d;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 40px;
+      width: 100%; max-width: 460px;
+      position: relative;
+      transform: translateY(16px) scale(0.98);
+      transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+    }
+    .modal-overlay.open .modal { transform: none; }
+    .modal-close {
+      position: absolute; top: 16px; right: 16px;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--ivory-dim); font-size: 18px;
+      transition: background 0.2s ease;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.1); }
+    .modal-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; margin-bottom: 6px; }
+    .modal-sub { font-size: 14px; color: var(--ivory-dim); margin-bottom: 28px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--ivory-dim); }
+    .form-control {
+      width: 100%; padding: 12px 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      color: var(--ivory); font-size: 15px; outline: none;
+      transition: border-color 0.3s ease;
+    }
+    .form-control:focus { border-color: rgba(201,168,76,0.4); }
+    select.form-control option { background: #12121d; }
+    .modal-submit { width: 100%; margin-top: 8px; justify-content: center; padding: 15px; }
+    .modal-success {
+      display: none; text-align: center; padding: 20px 0;
+    }
+    .modal-success .checkmark {
+      font-size: 48px; display: block; margin-bottom: 12px;
+    }
+    .modal-success h3 { font-family: 'Syne', sans-serif; font-size: 20px; margin-bottom: 8px; }
+    .modal-success p { color: var(--ivory-dim); font-size: 15px; }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+      .wa-mock { max-width: 380px; }
+      .stats-grid { grid-template-columns: 1fr; gap: 2px; }
+      .stat-card:first-child { border-radius: var(--radius) var(--radius) 0 0; }
+      .stat-card:last-child  { border-radius: 0 0 var(--radius) var(--radius); }
+      .steps-grid { grid-template-columns: 1fr 1fr; gap: 2px; }
+      .step-card:nth-child(1) { border-radius: var(--radius) 0 0 0; }
+      .step-card:nth-child(2) { border-radius: 0 var(--radius) 0 0; }
+      .step-card:nth-child(3) { border-radius: 0 0 0 var(--radius); }
+      .step-card:nth-child(4) { border-radius: 0 0 var(--radius) 0; }
+      .steps-connector { display: none; }
+      .score-inner { grid-template-columns: 1fr; gap: 48px; }
+      .audience-grid { grid-template-columns: 1fr; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .footer-top { grid-template-columns: 1fr; }
+      .footer-links { flex-wrap: wrap; gap: 16px 24px; }
+      .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+    }
+    @media (max-width: 600px) {
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+      .nav-right .btn-primary { display: none; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .step-card { border-radius: 0 !important; }
+      .step-card:first-child { border-radius: var(--radius) var(--radius) 0 0 !important; }
+      .step-card:last-child  { border-radius: 0 0 var(--radius) var(--radius) !important; }
+      .email-capture { flex-direction: column; border-radius: 16px; padding: 12px; gap: 8px; }
+      .email-capture input { padding: 6px 0; }
+      .email-capture .btn-primary { border-radius: 10px; justify-content: center; }
+      .hero-ctas { flex-direction: column; }
+      .hero-ctas .btn-primary,
+      .hero-ctas .btn-secondary { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── NAV ──────────────────────────────────────────────────── -->
+<nav id="navbar">
+  <div class="container nav-inner">
+    <a href="#" class="nav-logo">Vouch<span>.</span></a>
+    <div class="nav-links">
+      <a href="#how">How It Works</a>
+      <a href="#audience">For Businesses</a>
+      <a href="#score">Trust Score</a>
+      <a href="#audience">API</a>
+    </div>
+    <div class="nav-right">
+      <button class="btn-primary nav-cta open-modal">Request Early Access</button>
+      <div class="nav-hamburger" id="hamburger" aria-label="Toggle menu" role="button" tabindex="0">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#how">How It Works</a>
+    <a href="#audience">For Businesses</a>
+    <a href="#score">Trust Score</a>
+    <a href="#audience">API</a>
+    <button class="btn-primary open-modal">Request Early Access</button>
+  </div>
+</nav>
+
+<!-- ─── HERO ──────────────────────────────────────────────────── -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow hero-glow-1"></div>
+  <div class="hero-glow hero-glow-2"></div>
+
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <div class="hero-eyebrow reveal">
+          <span class="tag">🚀 Now in Early Access · Squad Hackathon 3.0</span>
+        </div>
+        <h1 class="hero-headline reveal reveal-d1">
+          Your customers<br/>
+          owe you.<br/>
+          <span class="gold">We make them pay.</span>
+        </h1>
+        <p class="hero-sub reveal reveal-d2">
+          Vouch is Africa's trust infrastructure — turning informal debts into structured payments and building the credit identities your customers have never had.
+        </p>
+        <div class="hero-ctas reveal reveal-d3">
+          <button class="btn-primary open-modal">Get Started Free <span>→</span></button>
+          <a href="#how" class="btn-secondary">See How It Works</a>
+        </div>
+      </div>
+
+      <!-- WhatsApp mock card -->
+      <div class="wa-mock reveal reveal-d4">
+        <div class="wa-phone">
+          <div class="wa-topbar">
+            <div class="wa-avatar">V</div>
+            <div>
+              <div class="wa-contact-name">Vouch Payments</div>
+              <div class="wa-contact-sub">Business · end-to-end encrypted</div>
+            </div>
+            <div class="wa-status"></div>
+          </div>
+          <div class="wa-messages">
+            <div class="wa-msg">
+              Hello <span class="wa-name">Ade</span> 👋 This is Kemi from <em>Kemi Fabrics</em>. Hope you're well! Just a friendly reminder about the ₦4,200 balance from your last fabric purchase on April 14th. Would you be able to sort it today? Here's a quick link to pay — takes under a minute 🙏
+              <div class="wa-pay-btn">💳 Pay ₦4,200 via Squad →</div>
+              <div class="wa-msg-time">10:43 AM ✓✓</div>
+            </div>
+            <div class="wa-paid">
+              <div>✅ Payment confirmed!</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;">₦4,200 · Ade Bello · Vouch</div>
+              <div class="wa-paid-badge">🏆 Trust Score updated · +2 pts</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── PROBLEM ───────────────────────────────────────────────── -->
+<section id="problem">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-card reveal">
+        <div class="stat-num" data-target="1.2" data-suffix="T" data-prefix="₦">₦0T</div>
+        <div class="stat-label">lost annually to unrecovered informal debt</div>
+      </div>
+      <div class="stat-card reveal reveal-d2">
+        <div class="stat-num" data-target="400" data-suffix="M">0M</div>
+        <div class="stat-label">Africans with zero formal credit identity</div>
+      </div>
+      <div class="stat-card reveal reveal-d3">
+        <div class="stat-num" data-target="40" data-suffix="%" data-lt="true">&lt;0%</div>
+        <div class="stat-label">of informal debts ever fully recovered</div>
+      </div>
+    </div>
+    <p class="problem-copy reveal">
+      The trader remembers. The customer forgets. The money disappears.<br/>
+      <strong>Vouch changes that.</strong>
+    </p>
+  </div>
+</section>
+
+<!-- ─── HOW IT WORKS ─────────────────────────────────────────── -->
+<section id="how">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="tag">The Flow</span>
+      <h2 class="section-title">Four steps. One closed debt.</h2>
+      <p class="section-sub">From memory to movement — Vouch handles the awkward part so you don't have to.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="steps-connector"></div>
+      <div class="step-card reveal">
+        <div class="step-num">1</div>
+        <div class="step-icon">📥</div>
+        <div class="step-title">Log the debt</div>
+        <p class="step-desc">Name, phone, amount. Add context if you want. Manual entry or via API — your call.</p>
+      </div>
+      <div class="step-card reveal reveal-d1">
+        <div class="step-num">2</div>
+        <div class="step-icon">🧠</div>
+        <div class="step-title">AI writes the message</div>
+        <p class="step-desc">Gemini generates a personalized, warm, human-sounding message. Not a stiff template.</p>
+      </div>
+      <div class="step-card reveal reveal-d2">
+        <div class="step-num">3</div>
+        <div class="step-icon">💬</div>
+        <div class="step-title">Customer receives it</div>
+        <p class="step-desc">Via WhatsApp or SMS, with a Squad payment link embedded. One tap to pay.</p>
+      </div>
+      <div class="step-card reveal reveal-d3">
+        <div class="step-num">4</div>
+        <div class="step-icon">✅</div>
+        <div class="step-title">Debt closes</div>
+        <p class="step-desc">Money moves. Score updates. Every interaction feeds a behavioral credit identity.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── TRUST SCORE ───────────────────────────────────────────── -->
+<section id="score">
+  <div class="container">
+    <div class="score-inner">
+      <div class="score-copy">
+        <span class="tag reveal">Vouch Trust Score™</span>
+        <h2 class="section-title reveal reveal-d1">A financial identity built from behavior.</h2>
+        <p class="reveal reveal-d2">Every payment. Every message. Every delay. All of it becomes a portable trust score — Africa's informal credit bureau, built one transaction at a time.</p>
+        <div class="score-features reveal reveal-d3">
+          <div class="score-feat">Behavioral scoring, not bank statements</div>
+          <div class="score-feat">Portable across businesses and lenders</div>
+          <div class="score-feat">Real-time updates on every interaction</div>
+          <div class="score-feat">API access for fintechs, telcos &amp; cooperatives</div>
+        </div>
+      </div>
+
+      <div class="score-card-wrap reveal reveal-d2">
+        <div class="score-card card">
+          <div class="sc-header">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="sc-avatar">A</div>
+              <div class="sc-name-wrap">
+                <div class="sc-name">Amaka Okafor</div>
+                <div class="sc-id">+234 801 234 5678 · Lagos</div>
+              </div>
+            </div>
+            <div class="sc-badge">High Trust</div>
+          </div>
+
+          <div class="sc-score-ring">
+            <svg class="sc-ring-svg" width="130" height="130" viewBox="0 0 90 90">
+              <circle class="sc-ring-bg" cx="45" cy="45" r="40" stroke-width="6"/>
+              <circle class="sc-ring-fill" cx="45" cy="45" r="40" stroke-width="6"
+                transform="rotate(-90 45 45)"/>
+            </svg>
+            <div class="sc-score-num">
+              <span class="sc-num" id="scoreNum">91</span>
+              <span class="sc-denom">/100</span>
+            </div>
+          </div>
+
+          <div class="sc-stats">
+            <div class="sc-stat">
+              <div class="sc-stat-val">1.4d</div>
+              <div class="sc-stat-lbl">Avg. payback</div>
+            </div>
+            <div class="sc-stat">
+              <div class="sc-stat-val">12</div>
+              <div class="sc-stat-lbl">Debts settled</div>
+            </div>
+            <div class="sc-stat">
+              <div class="sc-stat-val">0</div>
+              <div class="sc-stat-lbl">Defaults</div>
+            </div>
+            <div class="sc-stat">
+              <div class="sc-stat-val">3</div>
+              <div class="sc-stat-lbl">Active businesses</div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;font-size:11px;color:var(--ivory-dim);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;">Payment history (last 6 months)</div>
+          <div class="sc-bars" id="scoreBars">
+            <div class="sc-bar-row" style="animation-delay:0.1s"><div class="sc-bar" style="height:55%;animation-delay:0.1s"></div><div class="sc-bar-lbl">Nov</div></div>
+            <div class="sc-bar-row" style="animation-delay:0.2s"><div class="sc-bar" style="height:72%;animation-delay:0.2s"></div><div class="sc-bar-lbl">Dec</div></div>
+            <div class="sc-bar-row" style="animation-delay:0.3s"><div class="sc-bar" style="height:60%;animation-delay:0.3s"></div><div class="sc-bar-lbl">Jan</div></div>
+            <div class="sc-bar-row" style="animation-delay:0.4s"><div class="sc-bar" style="height:85%;animation-delay:0.4s"></div><div class="sc-bar-lbl">Feb</div></div>
+            <div class="sc-bar-row" style="animation-delay:0.5s"><div class="sc-bar" style="height:78%;animation-delay:0.5s"></div><div class="sc-bar-lbl">Mar</div></div>
+            <div class="sc-bar-row" style="animation-delay:0.6s"><div class="sc-bar" style="height:95%;animation-delay:0.6s;background:var(--gold)"></div><div class="sc-bar-lbl" style="color:var(--gold)">Apr</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOR BUSINESSES + DEVELOPERS ─────────────────────────── -->
+<section id="audience">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="tag">Built for everyone</span>
+      <h2 class="section-title">Whether you use a dashboard or an API.</h2>
+      <p class="section-sub">Vouch works for the market vendor and the engineering team building the next lending app.</p>
+    </div>
+    <div class="audience-grid">
+      <div class="audience-card card reveal">
+        <div class="aud-icon">🏪</div>
+        <div class="aud-title">For Businesses</div>
+        <p class="aud-sub">Traders, SMEs, service businesses — anyone owed money.</p>
+        <div class="aud-features">
+          <div class="aud-feature"><div class="aud-feature-dot"></div>Dashboard to log and track every debt in one place</div>
+          <div class="aud-feature"><div class="aud-feature-dot"></div>AI-powered collection that feels personal, not robotic</div>
+          <div class="aud-feature"><div class="aud-feature-dot"></div>Real-time payment notifications via WhatsApp &amp; SMS</div>
+          <div class="aud-feature"><div class="aud-feature-dot"></div>Vouch Trust Scores on every customer you serve</div>
+          <div class="aud-feature"><div class="aud-feature-dot"></div>No code required — start in under 5 minutes</div>
+        </div>
+      </div>
+
+      <div class="audience-card card reveal reveal-d2">
+        <div class="aud-icon">⚡</div>
+        <div class="aud-title">For Developers &amp; Enterprises</div>
+        <p class="aud-sub">Loan apps, telcos, cooperatives — build on Africa's trust layer.</p>
+        <div class="aud-features">
+          <div class="aud-feature"><div class="aud-feature-dot"></div>REST API for debt ingestion at scale</div>
+          <div class="aud-feature"><div class="aud-feature-dot"></div>Webhook support for real-time payment events</div>
+          <div class="aud-feature"><div class="aud-feature-dot"></div>Trust Score API endpoint for credit decisioning</div>
+          <div class="aud-feature"><div class="aud-feature-dot"></div>SDK coming soon (Node.js, Python)</div>
+        </div>
+        <div class="code-block">
+          <div class="code-topbar">
+            <div class="code-dot code-dot-r"></div>
+            <div class="code-dot code-dot-y"></div>
+            <div class="code-dot code-dot-g"></div>
+          </div>
+          <div><span class="code-method">POST</span> <span class="code-path">/v1/debts</span></div>
+          <div><span class="code-brace">{</span></div>
+          <div>&nbsp; <span class="code-key">"customer_phone"</span><span class="code-brace">:</span> <span class="code-str">"+2348012345678"</span><span class="code-brace">,</span></div>
+          <div>&nbsp; <span class="code-key">"amount"</span><span class="code-brace">:</span> <span class="code-num">4200</span><span class="code-brace">,</span></div>
+          <div>&nbsp; <span class="code-key">"business_id"</span><span class="code-brace">:</span> <span class="code-str">"biz_xxx"</span><span class="code-brace">,</span></div>
+          <div>&nbsp; <span class="code-key">"context"</span><span class="code-brace">:</span> <span class="code-str">"fabric purchase"</span></div>
+          <div><span class="code-brace">}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── TESTIMONIALS ─────────────────────────────────────────── -->
+<section id="testimonials">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="tag">Early users</span>
+      <h2 class="section-title">The market already trusts Vouch.</h2>
+      <p class="section-sub">Real voices from the traders and builders on our early access list.</p>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testi-card card reveal">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-quote">Before Vouch, I had a notebook full of names and numbers. Now I just send a link and the money comes in. My customers even thank me for making it easy.</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:linear-gradient(135deg,#c9a84c,#7c4f0f)">F</div>
+          <div>
+            <div class="testi-name">Folake A.</div>
+            <div class="testi-title">Fashion Vendor · Lagos Island Market</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card card reveal reveal-d2">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-quote">The WhatsApp message it sends is so natural, my customers think I wrote it myself. Three follow-ups used to take me all day. Now Vouch handles it in seconds.</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:linear-gradient(135deg,#4c8ec9,#0f4f7c)">C</div>
+          <div>
+            <div class="testi-name">Chukwuemeka O.</div>
+            <div class="testi-title">Phone Repair Shop · Ikeja</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card card reveal reveal-d3">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-quote">We integrated the API in a weekend. Having behavioral credit scores on borrowers who don't have BVN history is genuinely a game-changer for our underwriting.</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:linear-gradient(135deg,#4cc9a8,#0f7c58)">T</div>
+          <div>
+            <div class="testi-name">Tunde B.</div>
+            <div class="testi-title">CTO · Cooperative Lending Platform</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FINAL CTA ──────────────────────────────────────────────── -->
+<section id="cta-section">
+  <div class="container" style="position:relative;z-index:1;">
+    <h2 class="cta-headline reveal">
+      Vouch for your customers.<br/>
+      <span class="gold">Before someone else does.</span>
+    </h2>
+    <p class="cta-sub reveal reveal-d1">
+      Join the early access list. Be among the first businesses building credit identities for Africa's informal economy.
+    </p>
+    <div class="email-capture reveal reveal-d2">
+      <input type="email" id="ctaEmail" placeholder="your@business.com" />
+      <button class="btn-primary" id="ctaJoinBtn">Join Waitlist</button>
+    </div>
+    <p class="cta-note reveal reveal-d3" id="ctaNote" style="display:none;color:var(--gold)">🎉 You're on the list — we'll reach out soon!</p>
+    <div class="reveal reveal-d3">
+      <div class="hackathon-badge">
+        🏆 <span>Built for Squad Hackathon 3.0</span> · University of Ibadan · 2026
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ────────────────────────────────────────────────── -->
+<footer>
+  <div class="container">
+    <div class="footer-top">
+      <div>
+        <div class="footer-logo">Vouch<span>.</span></div>
+        <div class="footer-tagline">Africa's Trust Infrastructure</div>
+      </div>
+      <div class="footer-links">
+        <a href="#how">Product</a>
+        <a href="#audience">API Docs</a>
+        <a href="#problem">About</a>
+        <a href="#" aria-label="Twitter/X">Twitter/X</a>
+        <a href="#" aria-label="GitHub">GitHub</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Vouch Technologies. Lagos, Nigeria.</span>
+      <span>Turning "I'll pay you later" into a financial identity.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ─── MODAL ──────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal" id="modalBox">
+    <button class="modal-close" id="modalClose" aria-label="Close modal">✕</button>
+    <div id="modalForm">
+      <div class="tag" style="margin-bottom:16px;">🔑 Early Access</div>
+      <h2 class="modal-title" id="modalTitle">Join the Vouch Early Access</h2>
+      <p class="modal-sub">Be among the first to collect smarter and build credit for your customers.</p>
+      <form id="accessForm" novalidate>
+        <div class="form-group">
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName" class="form-control" placeholder="e.g. Kemi Adeyemi" required />
+        </div>
+        <div class="form-group">
+          <label for="emailInput">Email Address</label>
+          <input type="email" id="emailInput" class="form-control" placeholder="kemi@yourbusiness.com" required />
+        </div>
+        <div class="form-group">
+          <label for="bizType">Business Type</label>
+          <select id="bizType" class="form-control">
+            <option value="">Select your business type</option>
+            <option value="trader">Trader / Market Vendor</option>
+            <option value="service">Service Business</option>
+            <option value="freelancer">Freelancer / Agency</option>
+            <option value="sme">SME / Retailer</option>
+            <option value="dev">Developer / Enterprise</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-primary modal-submit">Request Access →</button>
+      </form>
+    </div>
+    <div class="modal-success" id="modalSuccess">
+      <span class="checkmark">🎉</span>
+      <h3>You're on the list.</h3>
+      <p>We'll be in touch soon with your early access details. Welcome to Vouch.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ─── JS ────────────────────────────────────────────────────── -->
+<script>
+  /* ── Particle canvas ───────────────────────────── */
+  (function() {
+    const canvas = document.getElementById('hero-canvas');
+    const ctx = canvas.getContext('2d');
+    let W, H, particles = [];
+    function resize() {
+      W = canvas.width  = canvas.offsetWidth;
+      H = canvas.height = canvas.offsetHeight;
+    }
+    function makeParticle() {
+      return {
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: Math.random() * 1.5 + 0.3,
+        vx: (Math.random() - 0.5) * 0.18,
+        vy: (Math.random() - 0.5) * 0.18,
+        a: Math.random() * 0.5 + 0.1
+      };
+    }
+    function init() {
+      resize();
+      particles = Array.from({length: 80}, makeParticle);
+    }
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(201,168,76,${p.a})`;
+        ctx.fill();
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > W) p.vx *= -1;
+        if (p.y < 0 || p.y > H) p.vy *= -1;
+      });
+      requestAnimationFrame(draw);
+    }
+    window.addEventListener('resize', () => { resize(); });
+    init(); draw();
+  })();
+
+  /* ── Scroll reveal ─────────────────────────────── */
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+  /* ── Count-up on stats ─────────────────────────── */
+  function countUp(el) {
+    const target = parseFloat(el.dataset.target);
+    const suffix = el.dataset.suffix || '';
+    const prefix = el.dataset.prefix || '';
+    const lt     = el.dataset.lt === 'true';
+    const dur    = 1600;
+    const step   = 16;
+    const steps  = dur / step;
+    let cur      = 0;
+    const inc    = target / steps;
+    const isDecimal = target % 1 !== 0;
+    const t = setInterval(() => {
+      cur = Math.min(cur + inc, target);
+      el.textContent = (lt ? '<' : '') + prefix + (isDecimal ? cur.toFixed(1) : Math.round(cur)) + suffix;
+      if (cur >= target) clearInterval(t);
+    }, step);
+  }
+  const statObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const num = e.target.querySelector('[data-target]');
+        if (num) countUp(num);
+        statObserver.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('.stat-card').forEach(c => statObserver.observe(c));
+
+  /* ── Mobile nav ────────────────────────────────── */
+  const hamburger   = document.getElementById('hamburger');
+  const mobileMenu  = document.getElementById('mobileMenu');
+  hamburger.addEventListener('click', () => {
+    const open = mobileMenu.style.display === 'flex';
+    mobileMenu.style.display = open ? 'none' : 'flex';
+    const spans = hamburger.querySelectorAll('span');
+    if (!open) {
+      spans[0].style.transform = 'translateY(7px) rotate(45deg)';
+      spans[1].style.opacity = '0';
+      spans[2].style.transform = 'translateY(-7px) rotate(-45deg)';
+    } else {
+      spans.forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
+    }
+  });
+  mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    mobileMenu.style.display = 'none';
+    const spans = hamburger.querySelectorAll('span');
+    spans.forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
+  }));
+
+  /* ── Modal ─────────────────────────────────────── */
+  const overlay   = document.getElementById('modal');
+  const modalForm = document.getElementById('modalForm');
+  const modalSuccess = document.getElementById('modalSuccess');
+
+  function openModal() { overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeModal() { overlay.classList.remove('open'); document.body.style.overflow = ''; }
+
+  document.querySelectorAll('.open-modal').forEach(btn => btn.addEventListener('click', openModal));
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  document.getElementById('accessForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    modalForm.style.display = 'none';
+    modalSuccess.style.display = 'block';
+  });
+
+  /* ── CTA inline join ───────────────────────────── */
+  document.getElementById('ctaJoinBtn').addEventListener('click', () => {
+    const val = document.getElementById('ctaEmail').value.trim();
+    if (!val || !val.includes('@')) { document.getElementById('ctaEmail').focus(); return; }
+    const note = document.getElementById('ctaNote');
+    note.style.display = 'block';
+    document.querySelector('.email-capture').style.display = 'none';
+    note.classList.add('reveal', 'visible');
+  });
+</script>
+
+</body>
+</html>
