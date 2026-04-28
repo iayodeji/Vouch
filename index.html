@@ -673,7 +673,7 @@
     </div>
     <div class="nav-right">
       <button class="btn-primary nav-cta open-modal">Request Early Access</button>
-      <div class="nav-hamburger" id="hamburger" aria-label="Toggle menu" role="button" tabindex="0">
+      <div class="nav-hamburger" id="hamburger" aria-label="Toggle menu" role="button" tabindex="0" aria-expanded="false">
         <span></span><span></span><span></span>
       </div>
     </div>
@@ -755,7 +755,7 @@
         <div class="stat-num" data-target="400" data-suffix="M">0M</div>
         <div class="stat-label">Africans with zero formal credit identity</div>
       </div>
-      <div class="stat-card reveal reveal-d3">
+      <div class="stat-card reveal reveal-d3" aria-label="Less than 40% of informal debts ever fully recovered">
         <div class="stat-num" data-target="40" data-suffix="%" data-lt="true">&lt;0%</div>
         <div class="stat-label">of informal debts ever fully recovered</div>
       </div>
@@ -1142,9 +1142,10 @@
   /* ── Mobile nav ────────────────────────────────── */
   const hamburger   = document.getElementById('hamburger');
   const mobileMenu  = document.getElementById('mobileMenu');
-  hamburger.addEventListener('click', () => {
+  function toggleHamburger() {
     const open = mobileMenu.style.display === 'flex';
     mobileMenu.style.display = open ? 'none' : 'flex';
+    hamburger.setAttribute('aria-expanded', String(!open));
     const spans = hamburger.querySelectorAll('span');
     if (!open) {
       spans[0].style.transform = 'translateY(7px) rotate(45deg)';
@@ -1153,9 +1154,12 @@
     } else {
       spans.forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
     }
-  });
+  }
+  hamburger.addEventListener('click', toggleHamburger);
+  hamburger.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleHamburger(); } });
   mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
     mobileMenu.style.display = 'none';
+    hamburger.setAttribute('aria-expanded', 'false');
     const spans = hamburger.querySelectorAll('span');
     spans.forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
   }));
